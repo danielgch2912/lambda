@@ -1,0 +1,46 @@
+
+Resources:
+
+  AwsLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: LambaJavaPutLog
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/LambdaJava:*"
+        - PolicyName: LambaJavaCreteLogGroup
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  AwsLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: LambdaJava
+      Runtime: java11
+      Handler: click.awsjava.lambdajava.LambdaJavaHandler
+      Role: !GetAtt AwsLambdaRole.Arn
+      Code:
+        S3Bucket: build.awsjava.click
+        S3Key: LambdaJava-1.0-SNAPSHOT-shaded.jar
+
